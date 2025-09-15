@@ -27,22 +27,28 @@
       --white: #ffffff;
       --timer-fill: #B355FF;
       --maxw: 680px;
-      --timer-sec: 3;          /* ⏱️ 카운터 시간: 3초 */
     }
     *{ box-sizing:border-box; margin:0; padding:0 }
-    html,body{ height:100%; }
+    html,body{ height:100% }
 
+    /* ✅ 안정적인 배경 처리: 단색 + 고정 오버레이 그라데이션 */
+    html { background:#FA4139; }                 /* 바닥색 */
     body{
       color:var(--white);
       font-family:'Galmuri11', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
                   "Noto Sans KR","Malgun Gothic", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-
-      /* ✅ 불투명 배경 그라데이션으로 보라색 띠 문제 해결 */
-      background: linear-gradient(180deg, #A233FB 0%, #FA4139 100%);
-      min-height: 100vh;
-      display:flex;
-      justify-content:center;
-      align-items:flex-start;
+      background:#FA4139;                         /* 바닥색 재확인 */
+      min-height:100vh;
+      display:flex; justify-content:center; align-items:flex-start;
+      overflow-x:hidden;
+      position:relative;
+      isolation:isolate;                          /* ::before 레이어 분리 */
+    }
+    body::before{
+      content:"";
+      position:fixed; inset:0;                    /* 화면 전체를 덮는 레이어 */
+      z-index:-1;
+      background: linear-gradient(180deg, #A233FB 0%, #FA4139 100%); /* 불투명 그라데이션 */
     }
 
     main{
@@ -53,7 +59,7 @@
 
     /* 1) 타이틀 */
     .title{
-      font-weight:700;             /* Galmuri11 Bold */
+      font-weight:700;
       font-size:20px;
       line-height:1.35;
       margin-bottom:14px;
@@ -61,7 +67,7 @@
 
     /* 2) 설명 */
     .desc{
-      font-weight:400;             /* Galmuri11 Regular */
+      font-weight:400;
       font-size:14px;
       line-height:1.6;
       margin-bottom:28px;
@@ -85,7 +91,7 @@
     }
     .timer-bar{
       height:12px;
-      width:100%;                  /* JS로 0%까지 줄어듦 */
+      width:100%;
       background: var(--timer-fill);
       border-radius:999px;
       transition: width .1s linear;
@@ -94,14 +100,14 @@
     /* 5) 게임 영역 */
     .game{
       width:min(680px, 92vw);
-      aspect-ratio: 1 / 1;         /* 정사각형 */
+      aspect-ratio: 1 / 1;
       background: rgba(255,255,255,.85);
       border-radius:8px;
       margin:18px auto 60px;
-      display:grid;
-      place-items:center;
+      display:grid; place-items:center;
       color:#666;
       user-select:none;
+      backdrop-filter: saturate(100%); /* 일부 브라우저에서 밑색 잔상 방지용(무해) */
     }
 
     @media (max-width:480px){
@@ -133,8 +139,8 @@
   </main>
 
   <script>
-    /* ───── 3초 카운트다운: 로드되면 즉시 100% → 0%로 줄어듭니다. ───── */
-    const DURATION = 3; // 요구사항: 3초
+    /* 3초 카운트다운 */
+    const DURATION = 3;
     const bar = document.getElementById('timerBar');
     let start = null;
 
@@ -145,11 +151,8 @@
       const pct = (remain / DURATION) * 100;
       bar.style.width = pct + '%';
 
-      if(remain > 0) {
-        requestAnimationFrame(tick);
-      } else {
-        console.log('time up');
-      }
+      if(remain > 0) requestAnimationFrame(tick);
+      else console.log('time up');
     }
     requestAnimationFrame(tick);
   </script>
