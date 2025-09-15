@@ -3,10 +3,161 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>이벤트 미니게임</title>
+  <title>집중력 향상 게임</title>
+
+  <style>
+    /* ─────────────────────  폰트(로컬)  ───────────────────── */
+    @font-face {
+      font-family: 'Galmuri11';
+      src: url('./assets/fonts/Galmuri11.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Galmuri11';
+      src: url('./assets/fonts/Galmuri11-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* ─────────────────────  전역 스타일  ───────────────────── */
+    :root{
+      --white: #ffffff;
+      --timer-fill: #B355FF;
+      --maxw: 680px;
+      --timer-sec: 5;          /* ⏱️ 요구사항: 5초 */
+    }
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+    body{
+      margin:0;
+      color:var(--white);
+      font-family:'Galmuri11', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+                  "Noto Sans KR","Malgun Gothic", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      /* 배경 그라데이션: A233FB(80%) → FA4139(80%) */
+      background: linear-gradient(180deg, rgba(162,51,251,0.8) 0%, rgba(250,65,57,0.8) 100%);
+      display:flex; justify-content:center; align-items:flex-start;
+    }
+    main{
+      width:min(var(--maxw), 92vw);
+      margin:8vh auto 6vh;
+      text-align:center;
+    }
+
+    /* 1) 타이틀 */
+    .title{
+      font-weight:700;             /* Galmuri11 Bold */
+      font-size:20px;              /* 요구 사이즈 */
+      line-height:1.35;
+      margin:0 0 14px;
+    }
+
+    /* 2) 설명 */
+    .desc{
+      font-weight:400;             /* Galmuri11 Regular */
+      font-size:14px;
+      line-height:1.6;
+      margin:0 0 28px;
+      opacity:.95;
+    }
+
+    /* 3) 라운드 표시 */
+    .round{
+      font-weight:400;
+      font-size:16px;
+      margin:14px 0 10px;
+    }
+
+    /* 4) 시간 카운터 */
+    .timer-shell{
+      width:min(520px, 92vw);
+      margin:0 auto 24px;
+      background: var(--white);
+      padding:4px;
+      border-radius:999px;
+    }
+    .timer-bar{
+      height:12px;
+      width:100%;                  /* JS로 0%까지 줄어듦 */
+      background: var(--timer-fill);
+      border-radius:999px;
+      transition: width .1s linear;
+    }
+
+    /* 5) 게임 영역 (placeholder) */
+    .game{
+      width:min(680px, 92vw);
+      aspect-ratio: 1 / 1;         /* 정사각형 */
+      background: rgba(255,255,255,.85);
+      border-radius:8px;
+      margin:18px auto 60px;
+      display:grid; place-items:center;
+      color:#666;
+      user-select:none;
+    }
+
+    /* 6) 큐텐 로고 */
+    .logo{
+      width:120px;
+      margin:0 auto;
+      display:block;
+      opacity:.95;
+    }
+
+    @media (max-width:480px){
+      main{ margin-top:6vh }
+      .game{ margin-bottom:48px }
+    }
+  </style>
 </head>
 <body>
-  <h1>이벤트 미니게임 랜딩</h1>
-  <p>여기에 곧 미니게임과 앱 설치 버튼이 들어갑니다 🚀</p>
+  <main>
+    <!-- 1. 타이틀 -->
+    <h1 class="title">집중력 향상 게임</h1>
+
+    <!-- 2. 설명 -->
+    <p class="desc">집중해서 같은 모양의 그림끼리 선택해 보세요.</p>
+
+    <!-- 3. Round -->
+    <div class="round" id="round">Round 1</div>
+
+    <!-- 4. 시간 카운터 (5초 진행바) -->
+    <div class="timer-shell" aria-label="남은 시간">
+      <div class="timer-bar" id="timerBar"></div>
+    </div>
+
+    <!-- 5. 게임 영역 -->
+    <section class="game" id="game">
+      <div>게임 영역 (추후 카드/아이콘 배치)</div>
+    </section>
+
+    <!-- 6. 큐텐 로고 -->
+    <img class="logo" src="./assets/qoo10-logo.png" alt="Qoo10 로고" />
+  </main>
+
+  <script>
+    /* ───── 5초 카운트다운: 로드되면 즉시 100% → 0%로 줄어듭니다. ───── */
+    const DURATION = 5; // 요구사항: 5초 (변경하려면 여기 또는 :root --timer-sec)
+    const bar = document.getElementById('timerBar');
+    let start = null;
+
+    function tick(ts){
+      if(!start) start = ts;
+      const elapsed = (ts - start) / 1000;
+      const remain = Math.max(0, DURATION - elapsed);
+      const pct = (remain / DURATION) * 100;
+      bar.style.width = pct + '%';
+
+      if(remain > 0) requestAnimationFrame(tick);
+      else {
+        // ⏱️ 타임업 시 처리: 여기에서 라운드 종료/다음 라운드 진입 로직을 연결하세요.
+        // 예) document.getElementById('round').textContent = 'Round 2';
+        console.log('time up');
+      }
+    }
+    requestAnimationFrame(tick);
+  </script>
 </body>
 </html>
