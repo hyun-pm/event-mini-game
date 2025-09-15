@@ -32,12 +32,12 @@
     html,body{ height:100% }
 
     /* ✅ 안정적인 배경 처리: 단색 + 고정 오버레이 그라데이션 */
-    html { background:#FA4139; }                 /* 바닥색 */
+    html { background:#FF7B75; }                 /* 바닥색 (변경됨) */
     body{
       color:var(--white);
       font-family:'Galmuri11', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
                   "Noto Sans KR","Malgun Gothic", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background:#FA4139;                         /* 바닥색 재확인 */
+      background:#FF7B75;                         /* 바닥색 재확인 (변경됨) */
       min-height:100vh;
       display:flex; justify-content:center; align-items:flex-start;
       overflow-x:hidden;
@@ -48,7 +48,7 @@
       content:"";
       position:fixed; inset:0;                    /* 화면 전체를 덮는 레이어 */
       z-index:-1;
-      background: linear-gradient(180deg, #A233FB 0%, #FA4139 100%); /* 불투명 그라데이션 */
+      background: linear-gradient(180deg, #B962FF 0%, #FF7B75 100%); /* 그라데이션 컬러 변경 */
     }
 
     main{
@@ -107,7 +107,7 @@
       display:grid; place-items:center;
       color:#666;
       user-select:none;
-      backdrop-filter: saturate(100%); /* 일부 브라우저에서 밑색 잔상 방지용(무해) */
+      backdrop-filter: saturate(100%);
     }
 
     @media (max-width:480px){
