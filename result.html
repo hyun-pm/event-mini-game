@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>결과 | 집중력 향상 게임</title>
   <style>
-    /* ── 폰트 (로컬) ── */
+    /* 폰트 */
     @font-face {
       font-family: 'Galmuri11';
       src: url('./assets/fonts/Galmuri11.woff2') format('woff2');
@@ -25,7 +25,7 @@
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
 
-    /* 배경: 메인과 동일 톤 */
+    /* 배경 */
     html{ background:#FF7B75 }
     body{
       background:#FF7B75;
@@ -37,8 +37,7 @@
       position:relative; isolation:isolate; overflow-x:hidden;
     }
     body::before{
-      content:"";
-      position:fixed; inset:0; z-index:-1;
+      content:""; position:fixed; inset:0; z-index:-1;
       background:linear-gradient(180deg,#B962FF 0%,#FF7B75 100%);
     }
 
@@ -50,57 +49,43 @@
 
     /* 1) 타이틀 */
     .title{
-      font-weight:700;                 /* Galmuri Bold */
-      font-size:20px;
-      line-height:1.4;
+      font-weight:700; font-size:20px; line-height:1.4;
       text-shadow: 0 1px 0 rgba(0,0,0,.12);
       margin-bottom:18px;
     }
 
-    /* 2) 비공개 이미지 박스(통짜 이미지) */
+    /* 2) 비공개 이미지: 원본 비율 그대로 (짤림 방지) */
     .locked{
       width:min(560px, 92vw);
-      aspect-ratio: 16 / 9;           /* 필요시 바꿔도 됨 */
-      background:#1e1e1f;
+      margin: 0 auto 26px;
       border-radius:12px;
       box-shadow: var(--shadow);
-      margin: 0 auto 26px;
-      display:grid; place-items:center;
+      background:#1e1e1f;
       overflow:hidden;
+      padding:0;           /* 내부 패딩 없음 */
+      line-height:0;
     }
     .locked img{
-      width:100%; height:100%; object-fit:cover;
       display:block;
+      width:100%;
+      height:auto;         /* ← 원본 비율 유지 */
+      object-fit: contain; /* ← 짤림 방지 */
     }
 
     /* 3) 카피 */
     .copy{
-      font-weight:400;                 /* Galmuri Regular */
-      font-size:16px;
-      line-height:1.6;
-      opacity:.95;
-      margin: 6px 0 14px;
+      font-weight:400; font-size:16px; line-height:1.6;
+      opacity:.95; margin: 6px 0 14px;
     }
 
-    /* 4) CTA 버튼(이미지 통짜) */
+    /* 4) CTA(이미지 버튼) */
     .cta{
-      display:inline-block;
-      line-height:0;
-      border-radius:12px;
-      box-shadow: var(--shadow);
+      display:inline-block; line-height:0;
+      border-radius:12px; box-shadow: var(--shadow);
       transition: transform .06s ease, opacity .12s ease;
     }
     .cta:active{ transform: translateY(1px) }
-    .cta img{
-      display:block;
-      width: 180px;                    /* 필요시 조절 */
-      height:auto;
-    }
-
-    /* 보조 링크(홈으로 등)를 쓰고 싶다면 아래 스타일 참고
-    .links{ margin-top:16px }
-    .link{ color:#fff; opacity:.85; font-size:13px; text-decoration:underline }
-    */
+    .cta img{ display:block; width: 200px; height:auto }
   </style>
 </head>
 <body>
@@ -108,7 +93,7 @@
     <!-- 1) 타이틀 -->
     <h1 class="title">나는 상위 몇% 일까?</h1>
 
-    <!-- 2) 비공개 이미지 -->
+    <!-- 2) 비공개 이미지 (통짜) -->
     <div class="locked" aria-label="결과는 앱에서 확인 가능">
       <img src="./assets/locked-banner.png" alt="잠금된 결과 이미지" />
     </div>
@@ -117,71 +102,59 @@
     <p class="copy">Qoo10 앱에서 확인할 수 있어요</p>
 
     <!-- 4) 큐텐으로 이동 (이미지 버튼) -->
-    <a href="#" id="cta" class="cta" aria-label="Qoo10 앱에서 열기">
-      <img src="./assets/qoo10-btn.png" alt="Qoo10에서 확인" />
+    <a href="#" id="cta" class="cta" aria-label="Qoo10으로 이동">
+      <img src="./assets/qoo10-btn.png" alt="Qoo10으로 이동" />
     </a>
-
-    <!-- 필요 시 보조 링크
-    <div class="links">
-      <a class="link" href="index.html">처음으로</a>
-    </div>
-    -->
   </main>
 
   <script>
-    // ================== 앱 열기/미설치 시 스토어 이동 ==================
-    // ▼▼ 여기를 실제 값으로 교체하세요 ▼▼
-    const IOS_APP_LINK      = 'qoo10://open'; // 예: 앱 스킴 또는 유니버설링크
-    const ANDROID_APP_LINK  = 'qoo10://open';
-    // Android 인텐트 링크가 있다면 사용 (없으면 빈 문자열)
-    const ANDROID_INTENT    = ''; // 예: 'intent://open#Intent;scheme=qoo10;package=com.qoo10.app;end'
-    const IOS_STORE_URL     = 'https://apps.apple.com/app/id0000000000';
-    const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=com.qoo10.app';
-    // ▲▲ 여기만 바꾸면 됩니다 ▲▲
+    // ===== 이동 경로 설정 =====
+    const PLAY_URL   = 'https://play.google.com/store/apps/details?id=net.giosis.shopping.jp';
+    const APPSTORE_URL = 'https://apps.apple.com/kr/app/qoo10-%E3%82%AD%E3%83%A5%E3%83%BC%E3%83%86%E3%83%B3/id490078053';
+    const WEB_URL    = 'https://www.qoo10.jp/';
+    // (추정 스킴) 스킴이 다르면 여기만 교체하세요.
+    const IOS_SCHEME = 'qoo10://';
+    const ANDROID_INTENT = `intent://open#Intent;scheme=qoo10;package=net.giosis.shopping.jp;S.browser_fallback_url=${encodeURIComponent(PLAY_URL)};end`;
 
     const cta = document.getElementById('cta');
 
-    function openAppSmart(){
-      const ua = navigator.userAgent || '';
-      const isAndroid = /Android/i.test(ua);
-      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    function isAndroid(){ return /Android/i.test(navigator.userAgent); }
+    function isIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+    function isMobile(){ return isAndroid() || isIOS(); }
 
-      const store = isIOS ? IOS_STORE_URL : ANDROID_STORE_URL;
-      const deep  = isIOS ? IOS_APP_LINK   : ANDROID_APP_LINK;
-
-      // 앱으로 시도
+    function openOnIOS(){
       const start = Date.now();
-      let pageHidden = false;
-      const onHide = () => { pageHidden = true; };
+      // 스킴 시도
+      window.location.href = IOS_SCHEME;
+
+      // 1.2초 내 페이지가 백그라운드로 가지 않으면 → 앱 미설치로 판단하고 App Store
+      let hidden = false;
+      const onHide = () => hidden = true;
       document.addEventListener('visibilitychange', onHide, { once:true });
 
-      // Android 인텐트 우선 사용 가능 시
-      if (isAndroid && ANDROID_INTENT) {
-        window.location.href = ANDROID_INTENT;
-      } else {
-        window.location.href = deep;
-      }
-
-      // 일정 시간 내 포커스 유지 시 → 스토어로
       setTimeout(() => {
         document.removeEventListener('visibilitychange', onHide, { once:true });
-        // 앱이 열리면 보통 페이지가 background로 가며 hidden 됨
-        const elapsed = Date.now() - start;
-        if (!pageHidden && elapsed < 1600) {
-          window.location.href = store;
+        if (!hidden && Date.now() - start < 1600) {
+          window.location.href = APPSTORE_URL;
         }
       }, 1200);
     }
 
+    function openOnAndroid(){
+      // 인텐트: 설치 시 앱 열림, 미설치 시 fallback_url로 스토어 이동
+      window.location.href = ANDROID_INTENT;
+    }
+
     cta.addEventListener('click', (e) => {
       e.preventDefault();
-      openAppSmart();
+      if (!isMobile()) {
+        // 데스크톱 → 웹으로
+        window.location.href = WEB_URL;
+        return;
+      }
+      if (isIOS()) openOnIOS();
+      else openOnAndroid();
     });
-
-    // (선택) result.html에 전달된 쿼리값을 활용하고 싶다면 여기서 파싱
-    // const params = new URLSearchParams(location.search);
-    // const round = Number(params.get('round') || 1);
-    // const reason = params.get('reason') || 'timeout';
   </script>
 </body>
 </html>
