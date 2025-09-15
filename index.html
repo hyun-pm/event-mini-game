@@ -27,19 +27,24 @@
       --white: #ffffff;
       --timer-fill: #B355FF;
       --maxw: 680px;
-      --timer-sec: 3;          /* ⏱️ 요구사항: 3초 */
+      --timer-sec: 3;          /* ⏱️ 카운터 시간: 3초 */
     }
-    *{ box-sizing:border-box }
-    html,body{ height:100% }
+    *{ box-sizing:border-box; margin:0; padding:0 }
+    html,body{ height:100%; }
+
     body{
-      margin:0;
       color:var(--white);
       font-family:'Galmuri11', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
                   "Noto Sans KR","Malgun Gothic", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      /* 배경 그라데이션: A233FB(80%) → FA4139(80%) */
-      background: linear-gradient(180deg, rgba(162,51,251,0.8) 0%, rgba(250,65,57,0.8) 100%);
-      display:flex; justify-content:center; align-items:flex-start;
+
+      /* ✅ 불투명 배경 그라데이션으로 보라색 띠 문제 해결 */
+      background: linear-gradient(180deg, #A233FB 0%, #FA4139 100%);
+      min-height: 100vh;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
     }
+
     main{
       width:min(var(--maxw), 92vw);
       margin:8vh auto 6vh;
@@ -49,9 +54,9 @@
     /* 1) 타이틀 */
     .title{
       font-weight:700;             /* Galmuri11 Bold */
-      font-size:20px;              /* 요구 사이즈 */
+      font-size:20px;
       line-height:1.35;
-      margin:0 0 14px;
+      margin-bottom:14px;
     }
 
     /* 2) 설명 */
@@ -59,7 +64,7 @@
       font-weight:400;             /* Galmuri11 Regular */
       font-size:14px;
       line-height:1.6;
-      margin:0 0 28px;
+      margin-bottom:28px;
       opacity:.95;
     }
 
@@ -86,14 +91,15 @@
       transition: width .1s linear;
     }
 
-    /* 5) 게임 영역 (placeholder) */
+    /* 5) 게임 영역 */
     .game{
       width:min(680px, 92vw);
       aspect-ratio: 1 / 1;         /* 정사각형 */
       background: rgba(255,255,255,.85);
       border-radius:8px;
       margin:18px auto 60px;
-      display:grid; place-items:center;
+      display:grid;
+      place-items:center;
       color:#666;
       user-select:none;
     }
@@ -139,8 +145,9 @@
       const pct = (remain / DURATION) * 100;
       bar.style.width = pct + '%';
 
-      if(remain > 0) requestAnimationFrame(tick);
-      else {
+      if(remain > 0) {
+        requestAnimationFrame(tick);
+      } else {
         console.log('time up');
       }
     }
