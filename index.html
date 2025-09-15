@@ -309,6 +309,28 @@
     // 화면 리사이즈 시 재배치(폰트/간격 재계산)
     const ro = new ResizeObserver(() => renderRound());
     ro.observe(boardEl);
+
+    /* ───────────── 추가: 뒤로 오면 1라운드로 하드 리셋 ───────────── */
+    function hardResetToRound1(){
+      try { if (rafId) cancelAnimationFrame(rafId); } catch(e){}
+      bar.style.width = '100%';
+      round = 1;
+      renderRound();
+    }
+
+    window.addEventListener('pageshow', (e) => {
+      // BFCache 복원 or ?reset=1 쿼리로 돌아온 경우 초기화
+      const navs = performance.getEntriesByType && performance.getEntriesByType('navigation');
+      const nav = navs && navs[0];
+      const cameFromBFCache = e.persisted || (nav && nav.type === 'back_forward');
+      const forceReset = new URLSearchParams(location.search).get('reset') === '1';
+
+      if (cameFromBFCache || forceReset) {
+        hardResetToRound1();
+        // 쿼리 정리
+        if (location.search) history.replaceState(null, '', location.pathname);
+      }
+    });
   </script>
 </body>
 </html>
