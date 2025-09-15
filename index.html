@@ -32,23 +32,23 @@
     html,body{ height:100% }
 
     /* ✅ 안정적인 배경 처리: 단색 + 고정 오버레이 그라데이션 */
-    html { background:#FF7B75; }                 /* 바닥색 (변경됨) */
+    html { background:#FF7B75; }
     body{
       color:var(--white);
       font-family:'Galmuri11', -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
                   "Noto Sans KR","Malgun Gothic", Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background:#FF7B75;                         /* 바닥색 재확인 (변경됨) */
+      background:#FF7B75;
       min-height:100vh;
       display:flex; justify-content:center; align-items:flex-start;
       overflow-x:hidden;
       position:relative;
-      isolation:isolate;                          /* ::before 레이어 분리 */
+      isolation:isolate;
     }
     body::before{
       content:"";
-      position:fixed; inset:0;                    /* 화면 전체를 덮는 레이어 */
+      position:fixed; inset:0;
       z-index:-1;
-      background: linear-gradient(180deg, #B962FF 0%, #FF7B75 100%); /* 그라데이션 컬러 변경 */
+      background: linear-gradient(180deg, #B962FF 0%, #FF7B75 100%);
     }
 
     main{
@@ -97,7 +97,7 @@
       transition: width .1s linear;
     }
 
-    /* 5) 게임 영역 */
+    /* 5) 게임 영역 (2/3 사이즈로 축소 적용) */
     .game{
       width:min(453px, 61.3vw);
       aspect-ratio: 1 / 1;
@@ -108,6 +108,39 @@
       color:#666;
       user-select:none;
       backdrop-filter: saturate(100%);
+      padding: 10px;
+    }
+
+    /* ───── 카드 보드 & 카드 ───── */
+    .board{
+      width:100%; height:100%;
+      display:grid; gap:12px;          /* 카드 간격 */
+    }
+    .card{
+      background:#fff;
+      border-radius:10px;               /* Figma corner radius 10 */
+      display:flex; align-items:center; justify-content:center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      cursor:pointer;
+      transition: transform .08s ease, box-shadow .12s ease, background .12s ease;
+      will-change: transform;
+    }
+    .card:active{ transform: scale(0.97); }
+    .glyph{
+      font-family:'Galmuri11';
+      font-weight:700;                  /* Bold */
+      line-height:1;
+      user-select:none;
+    }
+    .shake{
+      animation: shake .2s ease;
+    }
+    @keyframes shake {
+      0%{ transform: translateX(0) }
+      25%{ transform: translateX(-2px) }
+      50%{ transform: translateX(2px) }
+      75%{ transform: translateX(-2px) }
+      100%{ transform: translateX(0) }
     }
 
     @media (max-width:480px){
@@ -134,27 +167,153 @@
 
     <!-- 5. 게임 영역 -->
     <section class="game" id="game">
-      <div>게임 영역 (추후 카드/아이콘 배치)</div>
+      <div id="board" class="board" aria-label="카드 보드"></div>
     </section>
   </main>
 
   <script>
-    /* 3초 카운트다운 */
-    const DURATION = 3;
+    /* ─────────────────────  타이머 ───────────────────── */
     const bar = document.getElementById('timerBar');
-    let start = null;
+    let rafId = null;
+    let startTs = null;
+    let durationSec = 3;
+    let onTimeUp = null;
 
-    function tick(ts){
-      if(!start) start = ts;
-      const elapsed = (ts - start) / 1000;
-      const remain = Math.max(0, DURATION - elapsed);
-      const pct = (remain / DURATION) * 100;
-      bar.style.width = pct + '%';
-
-      if(remain > 0) requestAnimationFrame(tick);
-      else console.log('time up');
+    function startTimer(sec, onEnd){
+      durationSec = sec;
+      onTimeUp = onEnd;
+      startTs = null;
+      if(rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(tick);
     }
-    requestAnimationFrame(tick);
+    function tick(ts){
+      if(!startTs) startTs = ts;
+      const elapsed = (ts - startTs) / 1000;
+      const remain = Math.max(0, durationSec - elapsed);
+      const pct = (remain / durationSec) * 100;
+      bar.style.width = pct + '%';
+      if(remain > 0) rafId = requestAnimationFrame(tick);
+      else onTimeUp && onTimeUp();
+    }
+
+    /* ─────────────────────  라운드 & 보드 로직 ───────────────────── */
+    const roundEl = document.getElementById('round');
+    const boardEl = document.getElementById('board');
+    const MAX_ROUND = 30;
+    let round = 1;
+
+    function gridSizeFor(round){
+      if (round <= 5) return 2;       // 1~5 : 2x2
+      if (round <= 10) return 3;      // 6~10 : 3x3
+      if (round <= 14) return 3;      // 빈 구간(11~14): 3x3 유지
+      if (round <= 20) return 4;      // 15~20 : 4x4
+      if (round <= 24) return 5;      // 21~24 : 5x5
+      return 6;                        // 25~30 : 6x6
+    }
+
+    // 라운드가 올라갈수록 색 차이를 줄여 난이도 상승
+    function colorDeltaFor(round){
+      const maxDelta = 18;  // 시작 색 차이(밝기/채도)
+      const minDelta = 5;   // 최종 색 차이
+      const t = Math.min(1, (round-1)/(MAX_ROUND-1));
+      return Math.round(maxDelta - (maxDelta - minDelta) * t);
+    }
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    function makeHsl(h, s, l){ return `hsl(${h} ${s}% ${l}%)`; }
+
+    function randomBaseColor(){
+      const h = Math.floor(Math.random()*360);
+      const s = 70 + Math.floor(Math.random()*20); // 70~90%
+      const l = 55 + Math.floor(Math.random()*10); // 55~65%
+      return {h,s,l};
+    }
+
+    function renderRound(){
+      // UI 업데이트
+      roundEl.textContent = `Round ${round}`;
+      boardEl.innerHTML = '';
+
+      const cols = gridSizeFor(round);
+      const count = cols*cols;
+      boardEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+      // 폰트 크기: 셀 크기 기반으로 계산
+      const cellSize = boardEl.clientWidth / cols - 12; // gap 보정
+      const fontPx = Math.max(22, Math.floor(cellSize * 0.55));
+
+      // 색상 구성
+      const base = randomBaseColor();
+      const delta = colorDeltaFor(round);
+      const sign = Math.random() < 0.5 ? -1 : 1;
+      const odd = {
+        h: base.h,
+        s: clamp(base.s + sign * Math.round(delta * 0.6), 40, 95),
+        l: clamp(base.l + sign * delta, 20, 85),
+      };
+      const baseColor = makeHsl(base.h, base.s, base.l);
+      const oddColor  = makeHsl(odd.h, odd.s, odd.l);
+
+      // 정답 위치
+      const answerIndex = Math.floor(Math.random()*count);
+
+      for(let i=0;i<count;i++){
+        const card = document.createElement('button');
+        card.className = 'card';
+        card.setAttribute('aria-label', i===answerIndex ? '정답' : '카드');
+        card.style.border = '0';
+        card.style.padding = '0';
+
+        const span = document.createElement('span');
+        span.className = 'glyph';
+        span.textContent = 'Q';
+        span.style.fontSize = fontPx + 'px';
+        span.style.color = (i===answerIndex) ? oddColor : baseColor;
+
+        card.appendChild(span);
+        boardEl.appendChild(card);
+
+        card.addEventListener('click', () => {
+          if(i === answerIndex){
+            // 정답 → 다음 라운드
+            nextRound();
+          }else{
+            // 오답 → 살짝 흔들림 피드백
+            card.classList.remove('shake');
+            void card.offsetWidth; // reflow to restart animation
+            card.classList.add('shake');
+          }
+        }, { once:false });
+      }
+
+      // 라운드 타이머(3초)
+      startTimer(3, () => {
+        // 시간 초과 → 결과 페이지로
+        window.location.href = `result.html?round=${round}&reason=timeout`;
+      });
+    }
+
+    function nextRound(){
+      round += 1;
+      if(round > MAX_ROUND){
+        // 전 라운드 모두 성공
+        window.location.href = `result.html?round=${MAX_ROUND}&reason=clear`;
+        return;
+      }
+      renderRound();
+    }
+
+    // 최초 라운드 시작
+    renderRound();
+
+    // 화면 리사이즈 시 폰트 재계산을 위해 재랜더(색은 새로 뽑히지 않게 현재 라운드 유지)
+    const ro = new ResizeObserver(() => {
+      // 현재 라운드를 다시 그림 (색상/정답이 바뀌는 것을 막으려면 캐시가 필요하지만,
+      // 초기 구현은 단순화를 위해 리사이즈가 잦지 않다는 가정 하에 유지)
+      renderRound();
+    });
+    ro.observe(boardEl);
   </script>
 </body>
 </html>
