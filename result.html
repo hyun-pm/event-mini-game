@@ -155,6 +155,29 @@
       if (isIOS()) openOnIOS();
       else openOnAndroid();
     });
+
+    // ✅ 뒤로가기 시 1라운드 초기화 페이지로 복귀
+    // - 현재 페이지 히스토리에 더미 state를 추가해 back 이벤트를 가로챕니다.
+    // - BFCache로 복원될 때도 트랩이 유지되도록 pageshow에서도 재무장합니다.
+    (function setupBackToReset(){
+      const RESET_URL = 'index.html?reset=1';
+      try {
+        history.pushState({ page: 'result' }, '', location.href);
+        window.addEventListener('popstate', () => {
+          location.replace(RESET_URL);
+        });
+        window.addEventListener('pageshow', (e) => {
+          if (e.persisted) {
+            // BFCache 복원 시에도 다시 트랩
+            history.pushState({ page: 'result' }, '', location.href);
+          }
+        });
+      } catch (e) {
+        // 히스토리 API 미지원 브라우저 대비(거의 없음)
+        // 안전하게 index로 보냅니다.
+        window.onunload = () => { location.replace(RESET_URL); };
+      }
+    })();
   </script>
 </body>
 </html>
