@@ -27,7 +27,7 @@
       --white: #ffffff;
       --timer-fill: #B355FF;
       --maxw: 680px;
-      --timer-sec: 5;          /* ⏱️ 요구사항: 5초 */
+      --timer-sec: 3;          /* ⏱️ 요구사항: 3초 */
     }
     *{ box-sizing:border-box }
     html,body{ height:100% }
@@ -98,14 +98,6 @@
       user-select:none;
     }
 
-    /* 6) 큐텐 로고 */
-    .logo{
-      width:120px;
-      margin:0 auto;
-      display:block;
-      opacity:.95;
-    }
-
     @media (max-width:480px){
       main{ margin-top:6vh }
       .game{ margin-bottom:48px }
@@ -123,7 +115,7 @@
     <!-- 3. Round -->
     <div class="round" id="round">Round 1</div>
 
-    <!-- 4. 시간 카운터 (5초 진행바) -->
+    <!-- 4. 시간 카운터 (3초 진행바) -->
     <div class="timer-shell" aria-label="남은 시간">
       <div class="timer-bar" id="timerBar"></div>
     </div>
@@ -132,14 +124,11 @@
     <section class="game" id="game">
       <div>게임 영역 (추후 카드/아이콘 배치)</div>
     </section>
-
-    <!-- 6. 큐텐 로고 -->
-    <img class="logo" src="./assets/qoo10-logo.png" alt="Qoo10 로고" />
   </main>
 
   <script>
-    /* ───── 5초 카운트다운: 로드되면 즉시 100% → 0%로 줄어듭니다. ───── */
-    const DURATION = 5; // 요구사항: 5초 (변경하려면 여기 또는 :root --timer-sec)
+    /* ───── 3초 카운트다운: 로드되면 즉시 100% → 0%로 줄어듭니다. ───── */
+    const DURATION = 3; // 요구사항: 3초
     const bar = document.getElementById('timerBar');
     let start = null;
 
@@ -152,8 +141,6 @@
 
       if(remain > 0) requestAnimationFrame(tick);
       else {
-        // ⏱️ 타임업 시 처리: 여기에서 라운드 종료/다음 라운드 진입 로직을 연결하세요.
-        // 예) document.getElementById('round').textContent = 'Round 2';
         console.log('time up');
       }
     }
